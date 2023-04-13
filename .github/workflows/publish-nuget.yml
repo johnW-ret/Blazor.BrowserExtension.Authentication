@@ -18,7 +18,7 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore src/Msal.Extensions
     - name: Build
-      run: dotnet build src/Msal.Extensions --no-restore
+      run: dotnet build src/Msal.Extensions -c Release --no-restore
     - name: Test
       run: dotnet test src/Msal.Extensions --no-build --verbosity normal
     - name: Pack
