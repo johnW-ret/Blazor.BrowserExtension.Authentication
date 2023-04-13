@@ -1,0 +1,31 @@
+name: Build, Test and Nuget Publish
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - name: Restore dependencies
+      run: dotnet restore src/Msal.Extensions
+    - name: Build
+      run: dotnet build src/Msal.Extensions --no-restore
+    - name: Test
+      run: dotnet test src/Msal.Extensions --no-build --verbosity normal
+    - name: Pack
+      run: dotnet pack src/Msal.Extensions --configuration Release
+    - name: publish on version change
+      id: publish_nuget
+      uses: tedd/publish-nuget-neo@v1
+      with:
+        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+        REBUILD_PROJECT: false
