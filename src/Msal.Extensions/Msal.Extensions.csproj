@@ -9,6 +9,7 @@
 		<PackageId>Blazor.BrowserExtension.Authentication</PackageId>
 		<Version>0.0.1</Version>
 		<Authors>johnW-ret</Authors>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageDescription>Adds MSAL authentication features to browser extensions written with Blazor.BrowserExtension.</PackageDescription>
 		<RepositoryUrl>https://github.com/johnW-ret/Blazor.BrowserExtension.Authentication</RepositoryUrl>
 	</PropertyGroup>
