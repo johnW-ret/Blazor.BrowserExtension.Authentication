@@ -18,16 +18,12 @@ namespace Msal.ChromeExample
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
-            var apiScope = builder.Configuration["Api:ApiScope"];
-            ArgumentNullException.ThrowIfNull(apiScope);
-
             builder.Services.AddMsalAuthentication(options =>
             {
                 options.UserOptions.AuthenticationType = "oauth2";
                 options.ProviderOptions.UseChromeWebAuthFlow = true;
                 options.ProviderOptions.LoginMode = "redirect";
                 builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
-                options.ProviderOptions.DefaultAccessTokenScopes.Add(apiScope);
             });
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
