@@ -1,0 +1,29 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+
+<AuthorizeView>
+    <Authorized>
+        Hello @context.User.Identity?.Name
+        <a @onclick="@(_ => NavigationManager.NavigateToLogin("authentication/logout",
+            new() {
+                ReturnUrl = "index.html",
+                Interaction = InteractionType.SignOut
+            }))" href="#" class="nav-link">
+            Log out
+        </a>
+    </Authorized>
+    <NotAuthorized>
+        <a @onclick="@(_ => NavigationManager.NavigateToLogin("authentication/login",
+            new() {
+                ReturnUrl = "index.html",
+                Interaction = InteractionType.SignIn
+            }))" href="#" class="nav-link">
+            Log in
+        </a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@Body

@@ -1,0 +1,91 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<Import Project="Sdk.props" Sdk="Yarn.MSBuild" Version="1.22.19" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.5" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="7.0.5" />
+		<PackageReference Include="Microsoft.Authentication.WebAssembly.Msal" Version="7.0.4" />
+		<PackageReference Include="Yarn.MSBuild" Version="1.22.19" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<YarnWorkingDir>$(MSBuildThisFileDirectory)Interop\</YarnWorkingDir>
+		<ResolveStaticWebAssetsInputsDependsOn>
+			CompileInterop;
+			IncludeCompileInteropOutput;
+			$(ResolveStaticWebAssetsInputsDependsOn)
+		</ResolveStaticWebAssetsInputsDependsOn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<YarnInputs Include="$(YarnWorkingDir)**" Exclude="$(YarnWorkingDir)node_modules\**;$(YarnWorkingDir)*.d.ts;$(YarnWorkingDir)dist\**" />
+		<YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\AuthenticationService.js" />
+
+		<Content Remove="$(YarnWorkingDir)**" />
+		<None Include="$(YarnWorkingDir)*" Exclude="$(YarnWorkingDir)node_modules\**" />
+
+		<UpToDateCheckInput Include="@(YarnInputs)" Set="StaticWebassets" />
+		<UpToDateCheckOutput Include="@(YarnOutputs)" Set="StaticWebassets" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\" />
+	</ItemGroup>
+
+	<Target Name="_CreateInteropHash" BeforeTargets="CompileInterop" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'">
+
+		<PropertyGroup>
+			<InteropCompilationCacheFile>$(IntermediateOutputPath)interop.cache</InteropCompilationCacheFile>
+		</PropertyGroup>
+
+		<Hash ItemsToHash="@(YarnInputs)">
+			<Output TaskParameter="HashResult" PropertyName="_YarnInputsHash" />
+		</Hash>
+
+		<WriteLinesToFile Lines="$(_YarnInputsHash)" File="$(InteropCompilationCacheFile)" Overwrite="True" WriteOnlyWhenDifferent="True" />
+
+		<ItemGroup>
+			<FileWrites Include="$(InteropCompilationCacheFile)" />
+		</ItemGroup>
+
+	</Target>
+
+	<Target Name="CompileInterop" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'" Inputs="$(InteropCompilationCacheFile)" Outputs="@(YarnOutputs)">
+		<Yarn Command="install --mutex network --frozen-lockfile" WorkingDirectory="$(YarnWorkingDir)" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+		<Yarn Command="run build:production" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Release'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+		<Yarn Command="run build:debug" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Debug'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+
+		<Message Importance="high" Text="@(_InteropBuildOutput->'Emitted %(FullPath)')" />
+
+	</Target>
+
+	<Target Name="IncludeCompileInteropOutput">
+		<ItemGroup>
+			<_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
+		</ItemGroup>
+
+		<DefineStaticWebAssets Condition="'@(_InteropBuildOutput)' != ''" SourceType="Computed" SourceId="$(PackageId)" ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\" BasePath="_content/$(PackageId)" CandidateAssets="@(_InteropBuildOutput)" RelativePathFilter="**.js">
+			<Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+		</DefineStaticWebAssets>
+
+		<ItemGroup>
+			<_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
+			<FileWrites Include="$(_InteropBuildOutput)" />
+		</ItemGroup>
+	</Target>
+
+	<Import Project="Sdk.targets" Sdk="Yarn.MSBuild" Version="1.22.19" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
+
+</Project>

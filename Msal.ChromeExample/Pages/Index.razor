@@ -1,0 +1,14 @@
+﻿@page "/index.html"
+@using Microsoft.AspNetCore.Components.Authorization
+@inherits IndexPage
+
+<h1>Hello, from Blazor.</h1>
+
+<AuthorizeView>
+    <Authorized>
+        authorized
+    </Authorized>
+    <NotAuthorized>
+        not authorized
+    </NotAuthorized>
+</AuthorizeView>
